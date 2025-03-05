@@ -163,13 +163,13 @@ def train_step(train_iter, model, optimizer, scheduler, hp, scaler=None):
         del loss
 
 
-def train(trainset, validset, testsets, run_tag, hp):
+def train(trainset, validset, testset, run_tag, hp):
     """Train and evaluate the model
 
     Args:
         trainset (DittoDataset): the training set
         validset (DittoDataset): the validation set
-        testsets List of (DittoDataset): the test set
+        testset (DittoDataset): the test set
         run_tag (str): the tag of the run
         hp (Namespace): Hyper-parameters (e.g., batch_size,
                         learning rate, fp16)
@@ -190,14 +190,12 @@ def train(trainset, validset, testsets, run_tag, hp):
                                      shuffle=False,
                                      num_workers=0,
                                      collate_fn=padder)
-    if type(testsets) != type(None):
-        test_iters = []
-        for testset in testsets:
-            test_iters.append(data.DataLoader(dataset=testset,
-                                         batch_size=hp.batch_size*16,
-                                         shuffle=False,
-                                         num_workers=0,
-                                         collate_fn=padder))
+    if type(testset) != type(None):
+        test_iter = data.DataLoader(dataset=testset,
+                                     batch_size=hp.batch_size*16,
+                                     shuffle=False,
+                                     num_workers=0,
+                                     collate_fn=padder)
     # initialize model, optimizer, and LR scheduler
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = DittoModel(device=device,
@@ -239,21 +237,17 @@ def train(trainset, validset, testsets, run_tag, hp):
             dev_f1 = 0.0
             th = 0.5
         t_valid = time.process_time()
-        if type(testsets) != type(None):
-            test_results = []
-            for test_iter in test_iters:
-                test_f1, test_p, test_r = evaluate(model, test_iter, threshold=th)
-                test_results  += [test_f1, test_p, test_r]
+        if type(testset) != type(None):
+            test_f1, test_p, test_r = evaluate(model, test_iter, threshold=th)
         else:
             test_f1, test_p, test_r = 0.0, 0.0, 0.0
-            test_results = [0.0, 0.0, 0.0]
 
         t_test = time.process_time()
-        curr_results = [epoch] + test_results + [t_train-t_epoch, t_valid-t_train, t_test-t_valid]
+        curr_results = [epoch, test_f1, test_p, test_r, t_train-t_epoch, t_valid-t_train, t_test-t_valid]
         results += [curr_results]
         if dev_f1 > best_dev_f1:
             best_dev_f1 = dev_f1
-            best_test_f1 = test_results[0]
+            best_test_f1 = test_f1
             best_epoch = curr_results
             if hp.save_model:
                 # create the directory if not exist
