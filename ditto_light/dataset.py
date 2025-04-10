@@ -6,8 +6,10 @@ from transformers import AutoTokenizer
 from .augment import Augmenter
 
 # map lm name to huggingface's pre-trained model names
-lm_mp = {'roberta': 'roberta-base',
-         'distilbert': 'distilbert-base-uncased'}
+lm_mp = {'roberta': 'cardiffnlp/twitter-roberta-base-2022-154m',#'roberta-base',
+         'distilbert': 'distilbert-base-uncased',
+         'bert': "google-bert/bert-base-uncased",
+         'xlnet':"xlnet/xlnet-base-cased"}
 
 def get_tokenizer(lm):
     if lm in lm_mp:
