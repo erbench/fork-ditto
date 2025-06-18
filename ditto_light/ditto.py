@@ -16,7 +16,7 @@ from transformers import AutoModel, AdamW, get_linear_schedule_with_warmup
 from tensorboardX import SummaryWriter
 from torch.cuda import amp
 
-lm_mp = {'roberta': 'cardiffnlp/twitter-roberta-base-2022-154m',#'roberta-base',
+lm_mp = {'roberta': "FacebookAI/roberta-base",#'roberta-base',
          'distilbert': 'distilbert-base-uncased',
          'bert': "google-bert/bert-base-uncased",
          'xlnet':"xlnet/xlnet-base-cased"}
